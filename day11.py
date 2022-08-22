@@ -1,5 +1,6 @@
+chars = [chr(_) for _ in range(97, 97 + 26)]
 def check_increasing_straight(pswd) -> bool:
-    chars = [chr(_) for _ in range(97, 97 + 26)]
+    global chars
     good = False
     last = -1
     in_a_row = 0
@@ -56,26 +57,31 @@ def check_password(pswd) -> bool:
 
 
 def increment_password(pswd, carry, return_password) -> str:
-    chars = [chr(_) for _ in range(97, 97 + 26)]
+    global chars
     if pswd == "":
         return return_password
     else:
         current_character = pswd[len(pswd) - 1]
         pswd_to_forward = pswd[:len(pswd) - 1]
         if len(return_password) == 0 or carry:
-            if current_character == "z":
-                return_password = "a" + return_password
-                carry = True
-            else:
-                current_character = chars[chars.index(current_character) + 1]
-                return_password = current_character + return_password
-                carry = False
-            # print("+", pswd_to_forward, carry, return_password)
+            carry, return_password = increment_password_carry(current_character, return_password)
             return increment_password(pswd_to_forward, carry, return_password)
         else:
             return_password = current_character + return_password
             # print("-", pswd_to_forward, carry, return_password)
             return increment_password(pswd_to_forward, carry, return_password)
+
+
+def increment_password_carry(current_character, return_password):
+    global chars
+    if current_character == "z":
+        return_password = "a" + return_password
+        carry = True
+    else:
+        current_character = chars[chars.index(current_character) + 1]
+        return_password = current_character + return_password
+        carry = False
+    return carry, return_password
 
 
 def get_next_password(pswd: str) -> str:
