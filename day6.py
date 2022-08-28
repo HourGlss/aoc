@@ -299,9 +299,7 @@ toggle 534,948 through 599,968
 turn on 522,730 through 968,950
 turn off 102,229 through 674,529"""
 
-import copy
 import time
-import hashlib
 
 
 def create_grid(_h, _w) -> list[list[int]]:
