@@ -1,4 +1,6 @@
 from enum import Enum
+import itertools
+import random
 
 SpellCost = {
     "MAGICMISSILE": 53,
@@ -17,15 +19,16 @@ class Fighter:
     attack: int
     total_mana_cost: int
     effects: list["Effect"]
+    skill_list: list
 
     def __init__(self,
                  name,
                  health: int = 100,
                  mana: int = 0,
-                 drain_health: int = 14,
-                 mana_recharge: int = 400,
-                 shield_health: int = 20,
-                 poison_boss_health: int = 8
+                 # drain_health: int = 14,
+                 # mana_recharge: int = 400,
+                 # shield_health: int = 20,
+                 # poison_boss_health: int = 8
                  ):
         self.name = name
         self.health = health
@@ -34,48 +37,71 @@ class Fighter:
         self.attack = 0
         self.effects = []
         self.total_mana_cost = 0
-        self.drain_health = drain_health
-        self.mana_recharge = mana_recharge
-        self.shield_health = shield_health
-        self.poison_boss_health = poison_boss_health
+        # self.drain_health = drain_health
+        # self.mana_recharge = mana_recharge
+        # self.shield_health = shield_health
+        # self.poison_boss_health = poison_boss_health
+        self.skill_list = []
 
     def hit(self, other: "Fighter"):
         damage = self.attack - other.defense
         if damage < 1:
             damage = 1
+        display = ""
+        if PRINT:
+            display += "BEFORE\n"
+            display += f"\tself {self.health}hp {self.attack}atk\n"
+            display += f"\tother {other.health}hp {other.defense}def\n"
         other.health -= damage
         if PRINT:
-            print(f"{self.name}({self.health}) hits for {self.attack}-{other.defense} = {damage} damage. ({other.health})")
+            display += "AFTER\n"
+            display += f"\tself {self.health}hp {self.attack}atk\n"
+            display += f"\tother {other.health}hp {other.defense}def\n"
+            print(display)
+
+    # def next(self, other: "Fighter"):
+    #     # This didnt fucking work.
+    #     # need to adjust the algorithm
+    #     poison_active, shield_active, recharge_active = self.check_effects_active()
+    #     if self.mana > SpellCost['MAGICMISSILE'] and other.health <= 4:
+    #         self.magic_missile(other)
+    #         return
+    #     if self.mana > SpellCost['DRAIN']:
+    #         if self.health <= self.drain_health:
+    #             self.drain(other)
+    #             return
+    #     if SpellCost['RECHARGE'] <= self.mana < self.mana_recharge:
+    #         if not recharge_active:
+    #             self.recharge(other)
+    #             return
+    #     if self.mana > SpellCost['SHIELD'] and self.health < self.shield_health:
+    #         if not shield_active:
+    #             self.shield(other)
+    #             return
+    #     if other.health >= self.poison_boss_health:
+    #         if self.mana > SpellCost['POISON']:
+    #             if not poison_active:
+    #                 self.poison(other)
+    #                 return
+    #
+    #     if self.mana > SpellCost['MAGICMISSILE']:
+    #         self.magic_missile(other)
+    #         return
+    #     if PRINT:
+    #         print("Player has no mana")
+    #     self.health = 0
+    #     return
 
     def next(self, other: "Fighter"):
-        poison_active, shield_active, recharge_active = self.check_effects_active()
-        if self.mana > SpellCost['MAGICMISSILE'] and other.health <= 4:
-            self.magic_missile(other)
-            return
-        if self.mana > SpellCost['DRAIN']:
-            if self.health <= self.drain_health:
-                self.drain(other)
+        current_spell, name_of_spell = self.skill_list.pop(0)
+        if current_spell is not None:
+            if self.mana >= SpellCost[name_of_spell]:
+                current_spell(self, other)
                 return
-        if SpellCost['RECHARGE'] <= self.mana < self.mana_recharge:
-            if not recharge_active:
-                self.recharge(other)
-                return
-        if self.mana > SpellCost['SHIELD'] and self.health < self.shield_health:
-            if not shield_active:
-                self.shield(other)
-                return
-        if other.health >= self.poison_boss_health:
-            if self.mana > SpellCost['POISON']:
-                if not poison_active:
-                    self.poison(other)
-                    return
-
-        if self.mana > SpellCost['MAGICMISSILE']:
-            self.magic_missile(other)
-            return
-        if PRINT:
-            print("Player has no mana")
+            else:
+                print("ran out of mana :(")
         self.health = 0
+        print(f"len {len(self.skill_list)} mana {self.mana} but need {SpellCost[name_of_spell]}")
         return
 
     def check_effects_active(self):
@@ -113,28 +139,30 @@ class Fighter:
             print(f"{self.name}({self.health}) casts drain {damage} damage. ({other.health})")
 
     def poison(self, other: "Fighter"):
-        self.track_and_remove_mana("POISON")
         for effect in self.effects:
             if effect.name == "Poison":
-                return
-        self.effects.append(Poison(self,other))
+                return False
+        self.track_and_remove_mana("POISON")
+        self.effects.append(Poison(self, other))
+        return True
 
     def shield(self, other: "Fighter"):
-        self.track_and_remove_mana("SHIELD")
 
         for effect in self.effects:
             if effect.name == "Shield":
-                return
-        self.effects.append(Shield(self,self))
+                return False
+        self.track_and_remove_mana("SHIELD")
+        self.effects.append(Shield(self, self))
+        return True
 
     def recharge(self, other: "Fighter"):
 
-        self.track_and_remove_mana("RECHARGE")
-
         for effect in self.effects:
             if effect.name == "Recharge":
-                return
-        self.effects.append(Recharge(self,self))
+                return False
+        self.track_and_remove_mana("RECHARGE")
+        self.effects.append(Recharge(self, self))
+        return True
 
     def __repr__(self):
         return str(self)
@@ -166,7 +194,7 @@ class Effect:
     name: str
     target: Fighter
     cast_this_round: bool
-    caster : Fighter
+    caster: Fighter
 
     def __init__(self, name: str, rounds: int, caster: Fighter, target: Fighter):
         self.name = name
@@ -228,7 +256,7 @@ class Recharge(Effect):
 
     def __init__(self, caster: Fighter, target: Fighter):
 
-        super().__init__("Recharge", 5, caster, target)
+        super().__init__("Recharge", 4, caster, target)
 
     def go(self):
         if not self.cast_this_round:
@@ -298,33 +326,65 @@ def fight(fighters: tuple):
     return fight((fighter1, fighter2))
 
 
-def play_fair_round(a, b, c, d):
-    me = Fighter("Me", health=50, mana=500,
-                 drain_health=a,
-                 mana_recharge=b,
-                 shield_health=c,
-                 poison_boss_health=d)
+def play_fair_round(_skill_list):
+    me = Fighter("Me", health=50, mana=500)
     boss = Fighter("Boss", health=55)
     boss.attack = 8
+    me.skill_list = _skill_list
     lose = fight((me, boss))
     return lose, me.total_mana_cost
 
-PRINT = False
-if __name__ == "__main__":
-    #
-    # drain_health: int = 14,
-    # mana_recharge: int = 400,
-    # shield_health: int = 20,
-    # poison_boss_health: int = 8
-    # print(play_fair_round(1, 275, 3, 0))
-    cheapest = 4000
-    for a in range(0,30):
-        for b in range(SpellCost['RECHARGE'],500):
-            for c in range(0,50):
-                for d in range(0,50):
 
-                    lost, cost = play_fair_round(a, b, c, d)
-                    if not lost:
-                        if cost < cheapest:
-                            cheapest = cost
-                            print(cost,a,b,c,d)
+def build_list(n: int) -> list:
+    skill_list_by_name = []
+    last_cast = {
+        "SHIELD": -1,
+        "RECHARGE": -1,
+        "POISON": -1
+    }
+
+    for _i in range(n):
+        allowable = ["MAGICMISSILE", "DRAIN"]
+        if last_cast['SHIELD'] == -1 or last_cast['SHIELD'] + 8 <= _i:
+            allowable.append("SHIELD")
+        if last_cast['POISON'] == -1 or last_cast['POISON'] + 8 <= _i:
+            allowable.append("POISON")
+        if last_cast['RECHARGE'] == -1 or last_cast['RECHARGE'] + 7 <= _i:
+            allowable.append("RECHARGE")
+        next_spell = random.choice(allowable)
+        try:
+            last_cast[next_spell] = _i
+        except KeyError:
+            pass
+        skill_list_by_name.append(next_spell)
+    skills = {
+        "SHIELD": Fighter.shield,
+        "RECHARGE": Fighter.recharge,
+        "POISON": Fighter.poison,
+        "MAGICMISSILE": Fighter.magic_missile,
+        "DRAIN": Fighter.drain
+    }
+    _skill_list = []
+
+    for _s in skill_list_by_name:
+        _skill_list.append((skills[_s], _s))
+    return _skill_list
+
+
+PRINT = True
+if __name__ == "__main__":
+    cheapest = 5000
+    # print(len(skill_list))
+    while True:
+        # print(i)
+        _ = build_list(18)
+        lost, cost = play_fair_round(list(_))
+        if not lost:
+            print("WIN")
+            if cost < cheapest:
+                cheapest = cost
+                print(cost)
+        else:
+            pass
+        break
+            # print("LOSS")
