@@ -105,7 +105,7 @@ if __name__ == "__main__":
         "cars": 2,
         "perfumes": 1
     }, 0)
-    from day16_input import raw_input
+    from day16_data import raw_input
 
     aunts = build_other_aunts(raw_input)
     for aunt in aunts:
