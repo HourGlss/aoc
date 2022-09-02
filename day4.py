@@ -68,5 +68,6 @@ if __name__ == "__main__":
         proc = multiprocessing.Process(target=split_tasks, args=(k, i, i + step))
         k += 1
         procs.append(proc)
+    print(len(procs))
     for proc in procs:
         proc.start()

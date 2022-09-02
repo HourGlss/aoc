@@ -1,4 +1,4 @@
-from day22 import *
+from day22_parts.day22 import *
 
 
 def test_creation():
