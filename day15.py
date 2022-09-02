@@ -21,7 +21,7 @@ class Ingredient:
             "durability": self.amount * self.durability,
             "flavor": self.amount * self.flavor,
             "texture": self.amount * self.texture,
-            "calories":self.amount*self.calories
+            "calories": self.amount * self.calories
         }
 
 
@@ -70,6 +70,6 @@ if __name__ == "__main__":
                                 best_caloric_score = total_score
                         if total_score > best_score:
                             best_score = total_score
-                            print(a,b,c,d)
+                            print(a, b, c, d)
     print(best_score)
     print(best_caloric_score)
