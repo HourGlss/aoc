@@ -40,20 +40,20 @@ def test_shield():
     boss.attack = 8
     me.shield(boss)  # shield does not "work on cast"
     assert me.mana == 500 - SpellCost['SHIELD']
-    me.effects[0].go()  # shield will be active now
+    me.effects[0].build_output()  # shield will be active now
     boss.hit(me)
     assert me.health == (50 - boss.attack + me.defense)
-    me.effects[0].go()
+    me.effects[0].build_output()
     me.check_effects()
-    me.effects[0].go()
+    me.effects[0].build_output()
     me.check_effects()
-    me.effects[0].go()
+    me.effects[0].build_output()
     me.check_effects()
-    me.effects[0].go()
+    me.effects[0].build_output()
     me.check_effects()
-    me.effects[0].go()
+    me.effects[0].build_output()
     me.check_effects()
-    me.effects[0].go()
+    me.effects[0].build_output()
     me.check_effects()
     assert me.defense == 0
 
@@ -64,20 +64,20 @@ def test_poison():
     me.poison(boss)
     assert me.mana == 500 - SpellCost['POISON']
     assert boss.health == 55
-    me.effects[0].go()  # poison doesnt tick on first
+    me.effects[0].build_output()  # poison doesnt tick on first
     me.check_effects()
-    me.effects[0].go()  # first tick of damage
+    me.effects[0].build_output()  # first tick of damage
     me.check_effects()
     assert boss.health == 52
-    me.effects[0].go()  # second tick
+    me.effects[0].build_output()  # second tick
     me.check_effects()
-    me.effects[0].go()  # third tick
+    me.effects[0].build_output()  # third tick
     me.check_effects()
-    me.effects[0].go()  # fourth
+    me.effects[0].build_output()  # fourth
     me.check_effects()
-    me.effects[0].go()  # fifth
+    me.effects[0].build_output()  # fifth
     me.check_effects()
-    me.effects[0].go()  # sixth
+    me.effects[0].build_output()  # sixth
     me.check_effects()
     assert boss.health == 55 - (3 * 6)
     assert len(me.effects) == 0
@@ -88,28 +88,28 @@ def test_recharge():
     boss = Fighter("Boss", health=55)
     me.recharge(boss)
     assert me.mana == (500 - int(SpellCost['RECHARGE']))
-    me.effects[0].go()  # first
+    me.effects[0].build_output()  # first
     me.check_effects()
     ticks = 0
     assert me.mana == (500 - int(SpellCost['RECHARGE']))
-    me.effects[0].go()  # second turn, first tick
+    me.effects[0].build_output()  # second turn, first tick
     me.check_effects()
     ticks += 1
     assert me.mana == (500 - SpellCost['RECHARGE'] + (101 * ticks))
-    me.effects[0].go()  # third turn, second tick
+    me.effects[0].build_output()  # third turn, second tick
     me.check_effects()
     ticks += 1
     assert me.mana == (500 - SpellCost['RECHARGE'] + (101 * ticks))
-    me.effects[0].go()  # 4 , 3
+    me.effects[0].build_output()  # 4 , 3
     me.check_effects()
     ticks += 1
     assert me.mana == (500 - SpellCost['RECHARGE'] + (101 * ticks))
-    me.effects[0].go()  # 5 , 4
+    me.effects[0].build_output()  # 5 , 4
     me.check_effects()
     ticks += 1
     assert me.mana == (500 - SpellCost['RECHARGE'] + (101 * ticks))
     assert me.recharge(boss) == False
-    me.effects[0].go()  # 6, 5
+    me.effects[0].build_output()  # 6, 5
     me.check_effects()
     ticks += 1
     assert me.mana == (500 - SpellCost['RECHARGE'] + (101 * ticks))

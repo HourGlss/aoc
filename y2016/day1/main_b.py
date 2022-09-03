@@ -29,82 +29,97 @@ COMPASS_TURN = {
 
 
 class Sleigh:
-    heading: Direction
-    x: int
-    y: int
-    locations_visited: dict
+    __heading: Direction
+    __x: int
+    __y: int
+    __locations_visited: dict
+    __done: int
+    __answer: int
 
     def __init__(self):
-        self.heading = Direction.NORTH
-        self.x = 0
-        self.y = 0
-        self.locations_visited = dict()
-        self.visit_location()
+        self.__heading = Direction.NORTH
+        self.__x = 0
+        self.__y = 0
+        self.__locations_visited = dict()
+        self.__visit_location()
+        self.__done = False
+        self.__answer = -1
 
-    def set_heading(self, heading_to_set):
-        self.heading = heading_to_set
+    def set_heading(self, heading_to_set: Direction):
+        self.__heading = heading_to_set
 
-    def turn(self, turn_direction):
-        self.heading = COMPASS_TURN[self.heading][turn_direction]
+    def _turn(self, turn_direction: str) -> None:
+        self.__heading = COMPASS_TURN[self.__heading][turn_direction]
 
-    def get_heading(self):
-        return self.heading
+    def get_heading(self) -> Direction:
+        return self.__heading
 
-    def move(self, distance_to_move: int) -> bool:
+    def _move(self, distance_to_move: int):
         if self.get_heading() == Direction.NORTH:
-            for _ in range(distance_to_move):
-                self.y -= 1
-                if self.visit_location():
-                    return True
+            self.__move_north(distance_to_move)
         if self.get_heading() == Direction.EAST:
-            for _ in range(distance_to_move):
-                self.x += 1
-                if self.visit_location():
-                    return True
+            self.__move_east(distance_to_move)
         if self.get_heading() == Direction.SOUTH:
-            for _ in range(distance_to_move):
-                self.y += 1
-                if self.visit_location():
-                    return True
+            self.__move_south(distance_to_move)
         if self.get_heading() == Direction.WEST:
-            for _ in range(distance_to_move):
-                self.x -= 1
-                if self.visit_location():
-                    return True
-        return False
+            self.__move_west(distance_to_move)
+
+    def __move_west(self, distance_to_move):
+        for _ in range(distance_to_move):
+            self.__x -= 1
+            self.__visit_location()
+
+    def __move_south(self, distance_to_move):
+        for _ in range(distance_to_move):
+            self.__y += 1
+            self.__visit_location()
+
+    def __move_east(self, distance_to_move):
+        for _ in range(distance_to_move):
+            self.__x += 1
+            self.__visit_location()
+
+    def __move_north(self, distance_to_move):
+        for _ in range(distance_to_move):
+            self.__y -= 1
+            self.__visit_location()
 
     def get_location(self):
-        return self.x, self.y
+        return self.__x, self.__y
 
-    def visit_location(self) -> bool:
-        loc = self.x, self.y
-        if loc not in self.locations_visited.keys():
-            self.locations_visited[loc] = 0
-        self.locations_visited[loc] += 1
-        if self.locations_visited[loc] == 2:
-            return True
-        return False
+    def __visit_location(self):
+        loc = self.__x, self.__y
+        if loc not in self.__locations_visited.keys():
+            self.__locations_visited[loc] = 0
+        self.__locations_visited[loc] += 1
+        self._check_if_done(loc)
 
-    def move_and_turn(self, current_instruction: tuple[str, int]) -> bool:
+    def _check_if_done(self, loc):
+        if self.__locations_visited[loc] == 2:
+            if not self.__done:
+                self.__answer = self.get_move_distance_from_origin()
+                self.__done = True
+
+    def _move_and_turn(self, current_instruction: tuple[str, int]):
         _direction, _distance = current_instruction
-        self.turn(_direction)
-        if self.move(_distance):
-            return True
-        return False
+        self._turn(_direction)
+        self._move(_distance)
 
-    def use_instructions(self, instructions_to_use: list[tuple[str, int]])->bool:
+    def use_instructions(self, instructions_to_use: list[tuple[str, int]]):
         for instruction in instructions_to_use:
-            if self.move_and_turn(instruction):
-                break
-        else:
-            return False
-        return True
+            if not self.__done:
+                self._move_and_turn(instruction)
 
-    def get_move_distance_from_origin(self):
-        return abs(self.x) + abs(self.y)
+    def get_move_distance_from_origin(self) -> int:
+        return abs(self.__x) + abs(self.__y)
 
-    def get_locations_visited(self):
-        return self.locations_visited
+    def _get_locations_visited(self) -> dict[tuple[int, int], int]:
+        return self.__locations_visited
+
+    def get_answer(self)->int:
+        if self.__done:
+            return self.__answer
+        return -1
 
 
 def generate_instructions(_input_str: str) -> list[tuple[str, int]]:
@@ -114,12 +129,3 @@ def generate_instructions(_input_str: str) -> list[tuple[str, int]]:
         _distance = int(piece[1:])
         _instructions.append((_direction, _distance))
     return _instructions
-
-
-if __name__ == "__main__":
-    from data import raw_input
-
-    s = Sleigh()
-    instructions = generate_instructions(raw_input)
-    if s.use_instructions(instructions):
-        print(s.get_move_distance_from_origin())

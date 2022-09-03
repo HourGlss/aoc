@@ -4,33 +4,33 @@ from y2016.day1.main_b import *
 def test_turn():
     s = Sleigh()
     s.set_heading(Direction.NORTH)
-    s.turn("L")
+    s._turn("L")
     direction = s.get_heading()
     assert direction == Direction.WEST
     s.set_heading(Direction.EAST)
-    s.turn("R")
+    s._turn("R")
     direction = s.get_heading()
     assert direction == Direction.SOUTH
-    s.turn("R")
+    s._turn("R")
     direction = s.get_heading()
     assert direction == Direction.WEST
 
 
 def test_move():
     s = Sleigh()
-    s.move(5)
+    s._move(5)
     assert s.get_location() == (0, -5)
     s = Sleigh()
     s.set_heading(Direction.EAST)
-    s.move(5)
+    s._move(5)
     assert s.get_location() == (5, 0)
     s = Sleigh()
     s.set_heading(Direction.SOUTH)
-    s.move(5)
+    s._move(5)
     assert s.get_location() == (0, 5)
     s = Sleigh()
     s.set_heading(Direction.WEST)
-    s.move(5)
+    s._move(5)
     assert s.get_location() == (-5, 0)
 
 
@@ -82,10 +82,23 @@ def test_locations_visited():
     output1 = generate_instructions(input1)
     s = Sleigh()
     s.use_instructions(output1)
-    locations_visited = s.get_locations_visited()
+    locations_visited = s._get_locations_visited()
     assert locations_visited == {
         (0, 0): 1,
         (1, 0): 1,
         (1, -1): 1
     }
+
+
+def test_finish_challenge():
+    input1 = "R1, L1,R1,L1,R1, L1,R1,L1,L1,L1,L1,L1"
+    output1 = generate_instructions(input1)
+    s = Sleigh()
+    s.use_instructions(output1)
+    assert s.get_answer() == 6
+    input1 = "R1, L1,L1,L1,L1,L1,L1,L1,L1"
+    output1 = generate_instructions(input1)
+    s = Sleigh()
+    s.use_instructions(output1)
+    assert s.get_answer() == 0
 

@@ -327,12 +327,12 @@ def populate_elements(debug, raw_input_string, wires):
 
 def run_all_elements(elements):
     for element in elements.values():
-        element.go()
+        element.build_output()
 
 
 def part2(_wires, _elements, debug=False):
     for element in _elements.values():
-        element.done = False
+        element.__done = False
     for wire in _wires.values():
         wire.value = None
     temp = _wires['b']
@@ -354,7 +354,7 @@ def part2(_wires, _elements, debug=False):
             print(c)
             c += 1
         for element in elements.values():
-            element.go()
+            element.build_output()
     for wire_name, wire in wires.items():
         if wire_name == "lx":
             return wire.value, wires, elements

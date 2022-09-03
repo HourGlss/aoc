@@ -61,19 +61,19 @@ def test_answer_puzzle():
     output1 = generate_instructions(input1)
     s = Sleigh()
     s.use_instructions(output1)
-    blocks_away = s.get_move_distance_from_origin()
+    blocks_away = s.get_answer()
     assert blocks_away == 5
     input2 = "R2, R2, R2"
     output2 = generate_instructions(input2)
     s = Sleigh()
     s.use_instructions(output2)
-    blocks_away = s.get_move_distance_from_origin()
+    blocks_away = s.get_answer()
     assert blocks_away == 2
     input3 = "R5, L5, R5, R3"
     output3 = generate_instructions(input3)
     s = Sleigh()
     s.use_instructions(output3)
-    blocks_away = s.get_move_distance_from_origin()
+    blocks_away = s.get_answer()
     assert blocks_away == 12
 
 

@@ -73,7 +73,7 @@ class Sleigh:
         for instruction in instructions_to_use:
             self.move_and_turn(instruction)
 
-    def get_move_distance_from_origin(self):
+    def get_answer(self):
         return abs(self.x) + abs(self.y)
 
 
@@ -86,11 +86,3 @@ def generate_instructions(_input_str: str) -> list[tuple[str, int]]:
         _distance = int(piece[1:])
         _instructions.append((_direction, _distance))
     return _instructions
-
-
-if __name__ == "__main__":
-    from data import raw_input
-    s = Sleigh()
-    instructions = generate_instructions(raw_input)
-    s.use_instructions(instructions)
-    print(s.get_move_distance_from_origin())

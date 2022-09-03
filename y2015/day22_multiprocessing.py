@@ -36,7 +36,7 @@ def fight(fighters: tuple):
         else:
             return False
     for effect in fighter1.effects:
-        effect.go()
+        effect.build_output()
     dead_fighter = is_fight_done(fighters)
     if dead_fighter is not None:
         if dead_fighter.name == "Me":
@@ -47,7 +47,7 @@ def fight(fighters: tuple):
         print("-- Boss turn --")
         print_fighters(fighters)
     for effect in fighter1.effects:
-        effect.go()
+        effect.build_output()
     dead_fighter = is_fight_done(fighters)
     if dead_fighter is not None:
         if dead_fighter.name == "Me":
