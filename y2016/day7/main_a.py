@@ -101,13 +101,3 @@ class OutputHandler:
 
     def get_output(self):
         return self.output
-
-
-if __name__ == "__main__":
-    ip = IP("abba[mnop]qrst")
-    # print(ip.hypernets)
-    # print(ip.outsides)
-    a = IP.check_ABBAs(ip.outsides)
-    b = IP.check_ABBAs(ip.hypernets)
-    print(a,b)
-    print(ip.supports_tls())

@@ -1,11 +1,11 @@
 class IP:
     raw: str
-    outsides: list[str]
+    supernets: list[str]
     hypernets: list[str]
 
     def __init__(self, raw_input):
         self.raw = raw_input
-        self.outsides = self.extract_outsides()
+        self.supernets = self.extract_outsides()
         self.hypernets = self.extract_hypernets()
 
     def extract_outsides(self):
@@ -35,7 +35,7 @@ class IP:
                 pieces.append(self.raw[start:end])
                 end = -1
             if c == "[":
-                start = i +1
+                start = i + 1
                 end = -1
             if c == ']':
                 end = i
@@ -44,34 +44,52 @@ class IP:
         return pieces
 
     @staticmethod
-    def extract_pieces(net_to_check: str) -> list[str]:
+    def extract_aba_pieces(net_to_check: str) -> list[str]:
         pieces = []
-        for i in range(len(net_to_check)+1):
-            if i >= 4:
-                sequence = net_to_check[i - 4:i]
+        for i in range(len(net_to_check) + 1):
+            if i >= 3:
+                sequence = net_to_check[i - 3:i]
                 pieces.append(sequence)
         return pieces
 
     @staticmethod
-    def check_for_abba(list_of_seq: list[str]) -> bool:
+    def check_for_aba(list_of_seq: list[str]) -> list[str]:
+        abas = []
         for seq in list_of_seq:
-            a, b, c, d = seq
-            if a == d and b == c and a != b:
-                return True
-        return False
-
-    def supports_tls(self):
-        if self.check_ABBAs(self.outsides) and not self.check_ABBAs(self.hypernets):
-            return True
-        return False
+            a, b, c = seq
+            if a == c and b != a:
+                abas.append(f"{a}{b}{c}")
+        return abas
 
     @staticmethod
-    def check_ABBAs(nets_to_check):
-        for net in nets_to_check:
-            pieces = IP.extract_pieces(net)
-            if IP.check_for_abba(pieces):
-                return True
+    def convert_abas_to_babs(list_of_seq: list[str]) -> list[str]:
+        babs_out = []
+        for seq in list_of_seq:
+            a,b,c = seq
+            babs_out.append(f"{b}{a}{b}")
+        return babs_out
+
+    def supports_ssl(self):
+        valid_supernet_abas = []
+        for net in self.supernets:
+            pieces = IP.extract_aba_pieces(net)
+            aba_check = IP.check_for_aba(pieces)
+            for check in aba_check:
+                valid_supernet_abas.append(check)
+        valid_hypernet_babs = []
+        for net in self.hypernets:
+            pieces = IP.extract_aba_pieces(net)
+            aba_check = IP.check_for_aba(pieces)
+            for check in aba_check:
+                valid_hypernet_babs.append(check)
+        valid_supernet_babs = IP.convert_abas_to_babs(valid_supernet_abas)
+        for aba in valid_supernet_babs:
+            for bab in valid_hypernet_babs:
+                if aba == bab:
+                    return True
         return False
+
+
 
 
 class InputHandler:
@@ -85,6 +103,7 @@ class InputHandler:
         for line in lines:
             self.ips.append(IP(line))
 
+
 class OutputHandler:
     inputHandler: InputHandler
     output: int
@@ -96,18 +115,8 @@ class OutputHandler:
 
     def build_output(self):
         for ip in self.inputHandler.ips:
-            if ip.supports_tls():
+            if ip.supports_ssl():
                 self.output += 1
 
     def get_output(self):
         return self.output
-
-
-if __name__ == "__main__":
-    ip = IP("abba[mnop]qrst")
-    # print(ip.hypernets)
-    # print(ip.outsides)
-    a = IP.check_ABBAs(ip.outsides)
-    b = IP.check_ABBAs(ip.hypernets)
-    print(a,b)
-    print(ip.supports_tls())

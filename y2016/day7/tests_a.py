@@ -18,16 +18,7 @@ def test_IP_tls_tests():
     ip = IP(raw_inputs[3])
     assert ip.supports_tls()
 
-def test_IP_ssl_tests():
-    raw_inputs = test_input_b.split('\n')
-    ip = IP(raw_inputs[0])
-    assert ip.supports_ssl()
-    ip = IP(raw_inputs[1])
-    assert not ip.supports_ssl()
-    ip = IP(raw_inputs[2])
-    assert not ip.supports_ssl()
-    ip = IP(raw_inputs[3])
-    assert ip.supports_ssl()
+
 
 
 
