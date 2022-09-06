@@ -13,9 +13,9 @@ def test_move_one_row_of_cucumbers():
     s = SeaFloor()
     i = InputHandler(s)
     i.handle_raw_input("...>>>>>..v")
-    s.move_eastern_cucumbers()
+    s.tag_and_move_eastern_cucumbers()
     # s.print_floor()
-    s.move_eastern_cucumbers()
+    s.tag_and_move_eastern_cucumbers()
     # s.print_floor()
 
 def test_move_column_of_cucumbers():

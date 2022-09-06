@@ -5,7 +5,6 @@ class FloorSpot(Enum):
     SOUTH = 0
     EAST = 1
     EMPTY = 2
-    TEST = 3
 
 
 class SeaFloor:
@@ -16,11 +15,11 @@ class SeaFloor:
     def __init__(self):
         ...
 
-    def set_size_of_floor(self, width=-1, height=-1):
+    def set_size_of_floor(self, width: int = -1, height: int = -1) -> None:
         self.width = width
         self.height = height
 
-    def print_floor(self):
+    def print_floor(self) -> None:
         print("=" * self.width)
         for y in range(self.height):
             disp = ""
@@ -32,23 +31,20 @@ class SeaFloor:
                     disp += ">"
                 elif _ == FloorSpot.EMPTY:
                     disp += "."
-                elif _ == FloorSpot.TEST:
-                    disp += "Z"
-
             print(disp)
 
     def tick(self) -> bool:
         count = 0
-        count += self.move_eastern_cucumbers()
+        count += self.tag_and_move_eastern_cucumbers()
         count += self.tag_and_move_southern_cucumbers()
         if count == 0:
             return True
         return False
 
-    def move_eastern_cucumbers(self) -> int:
+    def tag_and_move_eastern_cucumbers(self) -> int:
         how_many_move = 0
         for y in range(self.height):
-            tagged = []
+            tagged: list[int] = []
             how_many_move = self.tag_eastern(how_many_move, tagged, y)
             self.move_eastern(tagged, y)
         return how_many_move
@@ -56,13 +52,12 @@ class SeaFloor:
     def tag_and_move_southern_cucumbers(self) -> int:
         how_many_move = 0
         for x in range(self.width):
-            tagged = []
+            tagged: list[int] = []
             how_many_move = self.tag_southern(how_many_move, tagged, x)
-            # print(tagged)
             self.move_southern(tagged, x)
         return how_many_move
 
-    def move_eastern(self, tagged, y):
+    def move_eastern(self, tagged: list[int], y: int) -> None:
         for x in range(self.width - 1, -1, -1):
             for _ in tagged:
                 if x == _:
@@ -72,7 +67,7 @@ class SeaFloor:
                     else:
                         self.floor[y][self.width - 1] = FloorSpot.EMPTY
 
-    def move_southern(self, tagged, x):
+    def move_southern(self, tagged: list[int], x: int) -> None:
         for y in range(self.height - 1, -2, -1):
             for _ in tagged:
                 if y == _:
@@ -83,7 +78,7 @@ class SeaFloor:
                         self.floor[y - 1][x] = FloorSpot.EMPTY
                         self.floor[y][x] = FloorSpot.SOUTH
 
-    def tag_southern(self, how_many_move, tagged, x):
+    def tag_southern(self, how_many_move: int, tagged: list[int], x: int) -> int:
         for y in range(self.height - 1, -1, -1):
             if self.floor[y][x] == FloorSpot.SOUTH:
                 if y + 1 < self.height:
@@ -96,7 +91,7 @@ class SeaFloor:
                         how_many_move += 1
         return how_many_move
 
-    def tag_eastern(self, how_many_move, tagged, y):
+    def tag_eastern(self, how_many_move: int, tagged: list[int], y: int) -> int:
         for x in range(self.width - 1, -1, -1):
             if self.floor[y][x] == FloorSpot.EAST:
                 if x + 1 < self.width:
@@ -131,7 +126,7 @@ class InputHandler:
         height = len(data)
         self.seafloor.set_size_of_floor(width=width, height=height)
 
-    def handle_raw_input(self, raw_input):
+    def handle_raw_input(self, raw_input: str):
         self.set_size_of_seafloor(raw_input)
         data = raw_input.split('\n')
         floor = []
@@ -164,21 +159,3 @@ class OutputHandler:
 
     def get_output(self):
         ...
-
-
-if __name__ == "__main__":
-    from y2021.day25.data import test_input
-
-    s = SeaFloor()
-    i = InputHandler(s)
-    data = """v...>>.vv>
-.vv>>.vv..
->>.>v>...v
->>v>>.>.v.
-v>v.vv.v..
->.>>..v...
-.vv..>.>v.
-v.v..>>v.v
-....v..v.>"""
-    i.handle_raw_input(data)
-    print(s.run())
