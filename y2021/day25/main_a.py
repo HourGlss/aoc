@@ -19,6 +19,85 @@ class SeaFloor:
         self.width = width
         self.height = height
 
+    def run(self) -> int:
+        steps = 0
+        while True:
+            steps += 1
+            check = self.tick()
+            if check:
+                break
+        return steps
+
+    def tick(self) -> bool:
+        count = 0
+        count += self.move_eastern_cucumbers()
+        count += self.move_southern_cucumbers()
+        if count == 0:
+            return True
+        return False
+
+    def move_eastern_cucumbers(self) -> int:
+        return SeaFloor.tag_and_move_cucumbers(self.height, self.tag_eastern, self.move_eastern)
+
+    def move_southern_cucumbers(self) -> int:
+        return SeaFloor.tag_and_move_cucumbers(self.width, self.tag_southern, self.move_southern)
+
+    @staticmethod
+    def tag_and_move_cucumbers(dimension, tag_fn, move_fn) -> int:
+        how_many_move = 0
+        for i in range(dimension):
+            tagged: list[int] = []
+            how_many_move = tag_fn(how_many_move, tagged, i)
+            move_fn(tagged, i)
+        return how_many_move
+
+    def tag_eastern(self, how_many_move: int, tagged: list[int], y: int) -> int:
+        for x, y in self.east_facing_tiles_in_row(y):
+            next_x = self.next_tile_east(x)
+            if self.is_empty(next_x, y):
+                tagged.append(next_x)
+                how_many_move += 1
+        return how_many_move
+
+    def east_facing_tiles_in_row(self, y: int) -> list[tuple[int, int]]:
+        for x in range(self.width):
+            if self.floor[y][x] == FloorSpot.EAST:
+                yield x, y
+
+    def next_tile_east(self, x: int) -> int:
+        next_x = (x + 1) % self.width
+        return next_x
+
+    def tag_southern(self, how_many_move: int, tagged: list[int], x: int) -> int:
+        for x, y in self.south_facing_tiles_in_column(x):
+            next_y = self.next_tile_south(y)
+            if self.is_empty(x, next_y):
+                tagged.append(next_y)
+                how_many_move += 1
+        return how_many_move
+
+    def south_facing_tiles_in_column(self, x: int) -> list[tuple[int, int]]:
+        for y in range(self.height):
+            if self.floor[y][x] == FloorSpot.SOUTH:
+                yield x, y
+
+    def next_tile_south(self, y: int) -> int:
+        next_y = (y + 1) % self.height
+        return next_y
+
+    def is_empty(self, x, y) -> bool:
+        return self.floor[y][x] == FloorSpot.EMPTY
+
+    def move_eastern(self, tagged: list[int], y: int) -> None:
+        for x in tagged:
+            self.floor[y][x] = FloorSpot.EAST
+            self.floor[y][x - 1] = FloorSpot.EMPTY
+
+    def move_southern(self, tagged: list[int], x: int) -> None:
+        for y in tagged:
+            self.floor[y][x] = FloorSpot.SOUTH
+            self.floor[y - 1][x] = FloorSpot.EMPTY
+
     def print_floor(self) -> None:
         print("=" * self.width)
         for y in range(self.height):
@@ -32,86 +111,6 @@ class SeaFloor:
                 elif _ == FloorSpot.EMPTY:
                     disp += "."
             print(disp)
-
-    def tick(self) -> bool:
-        count = 0
-        count += self.tag_and_move_eastern_cucumbers()
-        count += self.tag_and_move_southern_cucumbers()
-        if count == 0:
-            return True
-        return False
-
-    def tag_and_move_eastern_cucumbers(self) -> int:
-        how_many_move = 0
-        for y in range(self.height):
-            tagged: list[int] = []
-            how_many_move = self.tag_eastern(how_many_move, tagged, y)
-            self.move_eastern(tagged, y)
-        return how_many_move
-
-    def tag_and_move_southern_cucumbers(self) -> int:
-        how_many_move = 0
-        for x in range(self.width):
-            tagged: list[int] = []
-            how_many_move = self.tag_southern(how_many_move, tagged, x)
-            self.move_southern(tagged, x)
-        return how_many_move
-
-    def move_eastern(self, tagged: list[int], y: int) -> None:
-        for x in range(self.width - 1, -1, -1):
-            for _ in tagged:
-                if x == _:
-                    self.floor[y][x] = FloorSpot.EAST
-                    if _ != 0:
-                        self.floor[y][x - 1] = FloorSpot.EMPTY
-                    else:
-                        self.floor[y][self.width - 1] = FloorSpot.EMPTY
-
-    def move_southern(self, tagged: list[int], x: int) -> None:
-        for y in range(self.height - 1, -2, -1):
-            for _ in tagged:
-                if y == _:
-                    if y == -1:
-                        self.floor[self.height - 1][x] = FloorSpot.EMPTY
-                        self.floor[0][x] = FloorSpot.SOUTH
-                    else:
-                        self.floor[y - 1][x] = FloorSpot.EMPTY
-                        self.floor[y][x] = FloorSpot.SOUTH
-
-    def tag_southern(self, how_many_move: int, tagged: list[int], x: int) -> int:
-        for y in range(self.height - 1, -1, -1):
-            if self.floor[y][x] == FloorSpot.SOUTH:
-                if y + 1 < self.height:
-                    if self.floor[y + 1][x] == FloorSpot.EMPTY:
-                        tagged.append(y + 1)
-                        how_many_move += 1
-                else:
-                    if self.floor[0][x] == FloorSpot.EMPTY:
-                        tagged.append(-1)
-                        how_many_move += 1
-        return how_many_move
-
-    def tag_eastern(self, how_many_move: int, tagged: list[int], y: int) -> int:
-        for x in range(self.width - 1, -1, -1):
-            if self.floor[y][x] == FloorSpot.EAST:
-                if x + 1 < self.width:
-                    if self.floor[y][x + 1] == FloorSpot.EMPTY:
-                        tagged.append(x + 1)
-                        how_many_move += 1
-                else:
-                    if self.floor[y][0] == FloorSpot.EMPTY:
-                        tagged.append(0)
-                        how_many_move += 1
-        return how_many_move
-
-    def run(self) -> int:
-        steps = 0
-        while True:
-            steps += 1
-            check = self.tick()
-            if check:
-                break
-        return steps
 
 
 class InputHandler:
